@@ -18,7 +18,8 @@ def execute_and_monitor(command):
     start_time = time.time()
 
     # Inicia el proceso
-    process = os.system(command)
+    for i in range(1,30):
+        process = os.system(command)
 
     # Monitoreo en paralelo
     duration = int(time.time() - start_time)
@@ -29,13 +30,20 @@ def execute_and_monitor(command):
 
     return execution_time, cpu_usage, memory_usage
 
-# Comando para ejecutar el algoritmo
-command = "python3 pqc_algorithm.py"
+    
 
-# Ejecutar y monitorear
-execution_time, cpu_usage, memory_usage = execute_and_monitor(command)
+def main():
+    # Comando para ejecutar el algoritmo
+    command = "python3 bike-t.py"
 
-# Resultados
-print(f"Tiempo de ejecución: {execution_time:.2f} segundos")
-print(f"Uso promedio de CPU: {sum(cpu_usage) / len(cpu_usage):.2f}%")
-print(f"Uso promedio de memoria: {sum(memory_usage) / len(memory_usage):.2f}%")
+    # Ejecutar y monitorear
+    execution_time, cpu_usage, memory_usage = execute_and_monitor(command)
+
+    # Resultados
+    print(f"Tiempo de ejecución: {execution_time:.2f} segundos")
+    print(f"Uso promedio de CPU: {sum(cpu_usage) / len(cpu_usage):.2f}%")
+    print(f"Uso promedio de memoria: {sum(memory_usage) / len(memory_usage):.2f}%")
+
+
+if __name__=="__main__":
+    main()

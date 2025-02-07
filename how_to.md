@@ -93,3 +93,5 @@ _side note:_ the interesting part of using the wrapper is that if liboqs is not 
 ```
 import oqs
 ```
+
+note, if running the code, please make sure you are in super user mode, the thing is that the venv is configured that way
