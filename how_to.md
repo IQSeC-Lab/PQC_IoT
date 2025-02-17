@@ -179,12 +179,52 @@ python3 liboqs-python/examples/rand.py
 
 _side note:_ the interesting part of using the wrapper is that if liboqs is not detected at runtime, it will be downloaded, configured and installed automatically as a shared library. and this will happen only when loading the wrapper.
 
-## How to use it in stand alone applications
+## How to use
 
-1. import the library
+The following code is to test the implementation in python:
 
-```
+```Python
 import oqs
+
+def test_oqs():
+    algorithm = "BIKE-L1"  # You can change this to other PQC algorithms supported by OQS
+
+    print(f"Testing {algorithm} with OQS...\n")
+
+    # Create a Key Encapsulation Mechanism (KEM) instance
+    with oqs.KeyEncapsulation(algorithm) as server:
+        # Generate keypair
+        public_key = server.generate_keypair()
+        print(f"Public Key: {public_key.hex()}\n")
+
+        # Simulate a client encapsulating a shared secret
+        with oqs.KeyEncapsulation(algorithm) as client:
+            ciphertext, shared_secret_client = client.encap_secret(public_key)
+            print(f"Ciphertext: {ciphertext.hex()}\n")
+            print(f"Shared Secret (Client): {shared_secret_client.hex()}\n")
+
+        # Server decapsulates the shared secret
+        shared_secret_server = server.decap_secret(ciphertext)
+        print(f"Shared Secret (Server): {shared_secret_server.hex()}\n")
+
+        # Verify the shared secret matches
+        if shared_secret_client == shared_secret_server:
+            print("\u2705 Shared secret successfully established!")
+        else:
+            print("\u274c Shared secret mismatch!")
+
+if __name__ == "__main__":
+    test_oqs()
 ```
 
-note, if running the code, please make sure you are in super user mode, the thing is that the venv is configured that way
+**note**, if running the code, please make sure you are in super user mode, you can do this by:
+
+```
+sudo su
+```
+
+and also do not forger to activate the venv:
+
+```
+. venv/bin/activate
+```
