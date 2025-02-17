@@ -1,6 +1,13 @@
 # This is an updated guide on how to install liboqs.
 
+There are a couple ways to install liboqs here we are going to layout some of them:
+
+- liboqs (The main implementation in c)
+- liboqs-python (The Python wrapper)
+
 ## Getting started
+
+These are going to be required across almost all the implementations of liboqs:
 
 1. first update your system
 
@@ -21,16 +28,20 @@ openssl version
 sudo apt install astyle cmake gcc ninja-build libssl-dev python3-pytest python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind
 ```
 
-## Installation
+# Installation of C Impleentation
 
 1. run this in the terminal
 
 ```
 git clone --depth=1 https://github.com/open-quantum-safe/liboqs
-cmake -S liboqs -B liboqs/build -DBUILD_SHARED_LIBS=ON
-cmake --build liboqs/build --parallel 8
-sudo cmake --build liboqs/build --target install
+cd ~/Desktop/liboqs
+mkdir -p build && cd build
+cmake .. -G Ninja
+ninja
+sudo ninja install
 ```
+
+**Disclaimer:** on the second line of _cd_ please make sure to replace the folder where you have cloned the liboqs
 
 2. put this line on terminal if using linux (which is recommended)
 
@@ -44,9 +55,91 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 export OQS_INSTALL_PATH=/path/to/liboqs
 ```
 
+or
+if using bash, do this to make it permanent
+
+```
+echo 'export LD_LIBRARY_PATH=~/Desktop/liboqs/build:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
 Remember to change the path to liboqs
 
-## Alternate instalation
+## How to use
+
+The next code snippet is a sample code to test the library installation:
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include <oqs/oqs.h>
+
+int main() {
+    printf("=== Testing liboqs Installation ===\n");
+
+    // Choose a KEM algorithm (Kyber-768)
+    const char *kem_name = "BIKE-L1";
+    OQS_KEM *kem = OQS_KEM_new(kem_name);
+
+    if (!kem) {
+        printf("Error: KEM %s not found.\n", kem_name);
+        return 1;
+    }
+
+    printf("\nTesting KEM: %s\n", kem->method_name);
+
+    // ✅ FIX: Use struct members instead of function calls
+    uint8_t public_key[kem->length_public_key];
+    uint8_t secret_key[kem->length_secret_key];
+    uint8_t ciphertext[kem->length_ciphertext];
+    uint8_t shared_secret_encap[kem->length_shared_secret];
+    uint8_t shared_secret_decap[kem->length_shared_secret];
+
+    // Generate key pair
+    if (OQS_KEM_keypair(kem, public_key, secret_key) != OQS_SUCCESS) {
+        printf("Error: Keypair generation failed!\n");
+        return 1;
+    }
+
+    // Encapsulate shared secret
+    if (OQS_KEM_encaps(kem, ciphertext, shared_secret_encap, public_key) != OQS_SUCCESS) {
+        printf("Error: Encapsulation failed!\n");
+        return 1;
+    }
+
+    // **FIXED: Correct function call**
+    if (OQS_KEM_decaps(kem, shared_secret_decap, ciphertext, secret_key) != OQS_SUCCESS) {
+        printf("Error: Decapsulation failed!\n");
+        return 1;
+    }
+
+    // Compare shared secrets
+    if (memcmp(shared_secret_encap, shared_secret_decap, kem->length_shared_secret) == 0) {
+        printf("Success! Shared secrets match!\n");
+    } else {
+        printf("Error: Shared secrets do NOT match!\n");
+    }
+
+    // Clean up
+    OQS_KEM_free(kem);
+    printf("\n=== liboqs test completed! ===\n");
+
+    return 0;
+}
+```
+
+To compile:
+
+```
+gcc test_liboqs.c -o test_liboqs \
+    -I~/Desktop/liboqs/include \
+    -L~/Desktop/liboqs/build -loqs \
+    -Wl,-rpath,~/Desktop/liboqs/build
+```
+
+**Disclaimer**: please make sure to change to the correct folder.
+
+# Installation of the Python wrapper
 
 1. install venv
 
@@ -86,7 +179,7 @@ python3 liboqs-python/examples/rand.py
 
 _side note:_ the interesting part of using the wrapper is that if liboqs is not detected at runtime, it will be downloaded, configured and installed automatically as a shared library. and this will happen only when loading the wrapper.
 
-### How to use it in stand alone applications
+## How to use it in stand alone applications
 
 1. import the library
 
