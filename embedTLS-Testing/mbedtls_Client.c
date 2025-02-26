@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <oqs/oqs.h>
 #include <mbedtls/gcm.h>
+#include <time.h>
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 8080
@@ -37,6 +38,11 @@ int main() {
     uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
     uint8_t iv[AES_IV_SIZE] = {0};  // Simple IV for testing (should be random)
 
+    srand(time(NULL));
+    for (int i = 0; i < AES_IV_SIZE; i++) {
+        iv[i] = rand() % 256;
+    }
+
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
         perror("Socket creation failed");
@@ -62,12 +68,18 @@ int main() {
 
     // Receive server's public key
     uint8_t public_key[kem->length_public_key];
+    
     recv(client_socket, public_key, kem->length_public_key, 0);
 
     // Generate shared secret
     uint8_t ciphertext[kem->length_ciphertext];
     uint8_t shared_secret[kem->length_shared_secret];
     OQS_KEM_encaps(kem, ciphertext, shared_secret, public_key);
+
+    // Debug prints for shared secret
+    printf("[DEBUG] Shared Secret: ");
+    for (int i = 0; i < kem->length_shared_secret; i++) printf("%02x", shared_secret[i]);
+    printf("\n");
 
     // Send ciphertext to server
     send(client_socket, ciphertext, kem->length_ciphertext, 0);
@@ -84,10 +96,56 @@ int main() {
         exit(1);
     }
 
-    // Send IV, encrypted message, and tag
-    send(client_socket, iv, AES_IV_SIZE, 0);
-    send(client_socket, encrypted_msg, encrypted_len, 0);
-    send(client_socket, tag, 16, 0);
+    // Debug prints for encrypted values
+    printf("[DEBUG] IV: ");
+    for (int i = 0; i < AES_IV_SIZE; i++) printf("%02x", iv[i]);
+    printf("\n");
+
+    printf("[DEBUG] Encrypted message: ");
+    for (int i = 0; i < encrypted_len; i++) printf("%02x", encrypted_msg[i]);
+    printf("\n");
+
+    printf("[DEBUG] Tag: ");
+    for (int i = 0; i < 16; i++) printf("%02x", tag[i]);
+    printf("\n");
+
+  // Send IV
+int total_sent = 0;
+while (total_sent < AES_IV_SIZE) {
+    int ret = send(client_socket, iv + total_sent, AES_IV_SIZE - total_sent, 0);
+    if (ret < 0) {
+        perror("Failed to send IV");
+        close(client_socket);
+        exit(1);
+    }
+    total_sent += ret;
+}
+
+// Send Encrypted Message
+total_sent = 0;
+while (total_sent < encrypted_len) {
+    int ret = send(client_socket, encrypted_msg + total_sent, encrypted_len - total_sent, 0);
+    if (ret < 0) {
+        perror("Failed to send Encrypted Message");
+        close(client_socket);
+        exit(1);
+    }
+    total_sent += ret;
+}
+
+// Send Tag
+total_sent = 0;
+while (total_sent < 16) {
+    int ret = send(client_socket, tag + total_sent, 16 - total_sent, 0);
+    if (ret < 0) {
+        perror("Failed to send Tag");
+        close(client_socket);
+        exit(1);
+    }
+    total_sent += ret;
+}
+
+
 
     printf("[CLIENT] Encrypted message sent!\n");
 
