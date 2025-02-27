@@ -7,142 +7,113 @@
 #include <mbedtls/gcm.h>
 
 #define PORT 8080
-#define BUFFER_SIZE 1024
-#define AES_KEY_SIZE 32  // 256-bit key
-#define AES_IV_SIZE 12   // 96-bit IV for GCM
+#define BUFFER_SIZE 2048  // 2KB memory allocation
+#define AES_KEY_SIZE 32    // 256-bit AES key
+#define AES_IV_SIZE 12     // 96-bit IV for GCM
+#define AES_TAG_SIZE 16    // AES-GCM tag size
+
+// Function to receive encrypted message from client
+int recv_encrypted_message(int client_socket, uint8_t *iv, uint8_t *ciphertext, size_t *cipher_len, uint8_t *tag) {
+    if (recv(client_socket, iv, AES_IV_SIZE, 0) != AES_IV_SIZE) return -1;
+    if (recv(client_socket, tag, AES_TAG_SIZE, 0) != AES_TAG_SIZE) return -1;
+
+    int bytes_received = recv(client_socket, ciphertext, BUFFER_SIZE, 0);
+    if (bytes_received <= 0) return -1;
+
+    *cipher_len = bytes_received;
+    return 0;
+}
 
 // AES-GCM decryption function using mbedTLS
-int aes_gcm_decrypt(uint8_t *ciphertext, int ciphertext_len, uint8_t *key, uint8_t *iv, uint8_t *plaintext, uint8_t *tag) {
+int aes_gcm_decrypt(uint8_t *ciphertext, size_t cipher_len, uint8_t *aes_key, uint8_t *iv, uint8_t *plaintext, uint8_t *tag) {
     mbedtls_gcm_context gcm;
     mbedtls_gcm_init(&gcm);
     
-    printf("[DEBUG] Key: ");
-    for (int i = 0; i < AES_KEY_SIZE; i++) printf("%02x", key[i]);
-    printf("\n");
-
-    printf("[DEBUG] IV: ");
-    for (int i = 0; i < AES_IV_SIZE; i++) printf("%02x", iv[i]);
-    printf("\n");
-
-    printf("[DEBUG] Ciphertext: ");
-    for (int i = 0; i < ciphertext_len; i++) printf("%02x", ciphertext[i]);
-    printf("\n");
-
-    printf("[DEBUG] Tag: ");
-    for (int i = 0; i < 16; i++) printf("%02x", tag[i]);
-    printf("\n");
-
-    if (mbedtls_gcm_setkey(&gcm, MBEDTLS_CIPHER_ID_AES, key, AES_KEY_SIZE * 8) != 0) {
+    if (mbedtls_gcm_setkey(&gcm, MBEDTLS_CIPHER_ID_AES, aes_key, AES_KEY_SIZE * 8) != 0) {
+        printf("[ERROR] Failed to set AES-GCM key!\n");
         mbedtls_gcm_free(&gcm);
-        printf("[DEBUG] Failed to set AES key\n");
         return -1;
     }
 
-    if (mbedtls_gcm_auth_decrypt(&gcm, ciphertext_len, iv, AES_IV_SIZE, NULL, 0, tag, 16, ciphertext, plaintext) != 0) {
-        mbedtls_gcm_free(&gcm);
-        printf("[DEBUG] AES-GCM decryption failed\n");
-        return -1;
-    }
-
+    int ret = mbedtls_gcm_auth_decrypt(&gcm, cipher_len, iv, AES_IV_SIZE, NULL, 0, tag, AES_TAG_SIZE, ciphertext, plaintext);
+    
     mbedtls_gcm_free(&gcm);
-    return ciphertext_len;
+
+    if (ret != 0) {
+        printf("[SERVER] Decryption failed!\n");
+        return -1;
+    }
+
+    return (int)cipher_len;  // Return decrypted length
 }
 
+// Handle client connection and perform key exchange using BIKE-KEM
 void handle_client(int client_socket) {
     printf("[SERVER] Client connected. Performing key exchange with BIKE-L1...\n");
 
-    OQS_KEM *kem = OQS_KEM_new("BIKE-L1");
+    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l1);
     if (!kem) {
-        printf("Error initializing BIKE-L1\n");
+        printf("[ERROR] Failed to initialize BIKE-L1 KEM!\n");
         close(client_socket);
         return;
+    }
+
+    // Allocate memory for key pair
+    uint8_t *public_key = malloc(kem->length_public_key);
+    uint8_t *secret_key = malloc(kem->length_secret_key);
+    uint8_t *ciphertext = malloc(kem->length_ciphertext);
+    uint8_t *shared_secret = malloc(kem->length_shared_secret);
+
+    if (!public_key || !secret_key || !ciphertext || !shared_secret) {
+        printf("[ERROR] Memory allocation failed!\n");
+        goto cleanup;
     }
 
     // Generate key pair
-    uint8_t public_key[kem->length_public_key];
-    uint8_t secret_key[kem->length_secret_key];
-    OQS_KEM_keypair(kem, public_key, secret_key);
+    if (OQS_KEM_keypair(kem, public_key, secret_key) != OQS_SUCCESS) {
+        printf("[ERROR] Failed to generate BIKE-L1 key pair!\n");
+        goto cleanup;
+    }
 
     // Send public key to client
-    send(client_socket, public_key, kem->length_public_key, 0);
+    if (send(client_socket, public_key, kem->length_public_key, 0) != (int)kem->length_public_key) {
+        printf("[ERROR] Failed to send public key!\n");
+        goto cleanup;
+    }
 
     // Receive encapsulated secret from client
-    uint8_t ciphertext[kem->length_ciphertext];
-    recv(client_socket, ciphertext, kem->length_ciphertext, 0);
+    if (recv(client_socket, ciphertext, kem->length_ciphertext, 0) != (int)kem->length_ciphertext) {
+        printf("[ERROR] Failed to receive ciphertext!\n");
+        goto cleanup;
+    }
 
     // Decapsulate shared secret
-    uint8_t shared_secret[kem->length_shared_secret];
-    OQS_KEM_decaps(kem, shared_secret, ciphertext, secret_key);
+    if (OQS_KEM_decaps(kem, shared_secret, ciphertext, secret_key) != OQS_SUCCESS) {
+        printf("[ERROR] Key decapsulation failed!\n");
+        goto cleanup;
+    }
+
     printf("[SERVER] Key exchange complete! Shared secret established.\n");
 
-    // Debug prints for shared secret
-    printf("[DEBUG] Shared Secret: ");
-    for (int i = 0; i < kem->length_shared_secret; i++) printf("%02x", shared_secret[i]);
-    printf("\n");
-
-    // Receive IV, encrypted message, and tag
+    // Receive encrypted data
     uint8_t iv[AES_IV_SIZE];
     uint8_t encrypted_msg[BUFFER_SIZE];
-    uint8_t tag[16];
+    uint8_t tag[AES_TAG_SIZE];
+    size_t encrypted_len;
 
-
-// Receive IV
-int total_received = 0;
-while (total_received < AES_IV_SIZE) {
-    int ret = recv(client_socket, iv + total_received, AES_IV_SIZE - total_received, 0);
-    if (ret <= 0) {
-        perror("Failed to receive IV");
-        close(client_socket);
-        return;
+    if (recv_encrypted_message(client_socket, iv, encrypted_msg, &encrypted_len, tag) < 0) {
+        perror("[SERVER] Failed to receive encrypted message");
+        goto cleanup;
     }
-    total_received += ret;
-}
 
-// Receive Encrypted Message
-int encrypted_len = 0;
-total_received = 0;
-while (total_received < BUFFER_SIZE) {
-    int ret = recv(client_socket, encrypted_msg + total_received, BUFFER_SIZE - total_received, 0);
-    if (ret <= 0) {
-        perror("Failed to receive Encrypted Message");
-        close(client_socket);
-        return;
+    printf("[SERVER] Received AES-GCM Tag: ");
+    for (int i = 0; i < AES_TAG_SIZE; i++) {
+        printf("%02X ", tag[i]);  // Print in hex format
     }
-    total_received += ret;
-}
-encrypted_len = total_received;  // Store the actual length received
-
-// Receive Tag
-total_received = 0;
-while (total_received < 16) {
-    int ret = recv(client_socket, tag + total_received, 16 - total_received, 0);
-    if (ret <= 0) {
-        perror("Failed to receive Tag");
-        close(client_socket);
-        return;
-    }
-    total_received += ret;
-}
-
-
-
-
-
-
-    // Debug prints for received values
-    printf("[DEBUG] IV: ");
-    for (int i = 0; i < AES_IV_SIZE; i++) printf("%02x", iv[i]);
     printf("\n");
+    
 
-    printf("[DEBUG] Encrypted message: ");
-    for (int i = 0; i < encrypted_len; i++) printf("%02x", encrypted_msg[i]);
-    printf("\n");
-
-    printf("[DEBUG] Tag: ");
-    for (int i = 0; i < 16; i++) printf("%02x", tag[i]);
-    printf("\n");
-
-    // Decrypt message with AES-GCM
+    // Decrypt message with AES-GCM using shared secret as key
     uint8_t decrypted_msg[BUFFER_SIZE] = {0};
     int decrypted_len = aes_gcm_decrypt(encrypted_msg, encrypted_len, shared_secret, iv, decrypted_msg, tag);
 
@@ -152,7 +123,11 @@ while (total_received < 16) {
         printf("[SERVER] Decrypted message: %s\n", decrypted_msg);
     }
 
-    // Clean up
+cleanup:
+    OQS_MEM_secure_free(public_key, kem->length_public_key);
+    OQS_MEM_secure_free(secret_key, kem->length_secret_key);
+    OQS_MEM_secure_free(ciphertext, kem->length_ciphertext);
+    OQS_MEM_secure_free(shared_secret, kem->length_shared_secret);
     OQS_KEM_free(kem);
     close(client_socket);
 }
@@ -191,3 +166,4 @@ int main() {
 
     return 0;
 }
+
