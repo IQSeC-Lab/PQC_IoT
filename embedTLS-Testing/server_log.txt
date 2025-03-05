@@ -1,0 +1,42 @@
+[SERVER] Failed to receive encrypted message: Success
+[SERVER] Listening on port 8080...
+[SERVER] Accepted a new client connection.
+[SERVER] Client connected. Performing key exchange with BIKE-L1...
+[SERVER] Key exchange complete! Shared secret established.
+[SERVER] Received encrypted message of length: 38 bytes
+[SERVER] Encrypted message (hex): C9 8B E9 71 73 06 C0 14 EB DE 9B FA 86 44 EA E0 D5 43 1D 3D DC D2 56 60 2D D6 87 F1 A2 DF F8 B7 4C 8E B5 77 AE 96 
+[SERVER] Decrypted message: Hello, PQC-secured World with BIKE-L1!
+[SERVER] Decrypted message length: 38 bytes
+[SERVER] Failed to receive encrypted message: Success
+[SERVER] Listening on port 8080...
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Client connected. Performing key exchange with BIKE-L1...
+[SERVER] Key exchange complete! Shared secret established.
+[SERVER] Received encrypted message of length: 38 bytes
+[SERVER] Encrypted message (hex): ED 63 0D C6 B1 7C C3 07 AF AE 73 BF 01 78 82 62 6A 41 62 DE 2A B4 6B 36 1D 42 7E 5E 64 46 A1 39 15 89 F8 29 7A 80 
+[SERVER] Decrypted message: Hello, PQC-secured World with BIKE-L1!
+[SERVER] Decrypted message length: 38 bytes
+[SERVER] Failed to receive encrypted message: Success
+[SERVER] Listening on port 8080...
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Client connected. Performing key exchange with BIKE-L1...
+[SERVER] Key exchange complete! Shared secret established.
+[SERVER] Received encrypted message of length: 38 bytes
+[SERVER] Encrypted message (hex): 81 7C 70 CF 49 AD F4 22 B3 8C A0 18 10 C4 23 72 78 F3 FC AF D7 91 D1 01 08 AA 1A 45 81 78 32 05 D4 8A 75 0A FB 9C 
+[SERVER] Decrypted message: Hello, PQC-secured World with BIKE-L1!
+[SERVER] Decrypted message length: 38 bytes
+[SERVER] Failed to receive encrypted message: Success
+[SERVER] Listening on port 8080...
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Accepted a new client connection.
+[SERVER] Client connected. Performing key exchange with BIKE-L1...
+[SERVER] Key exchange complete! Shared secret established.
+[SERVER] Received encrypted message of length: 38 bytes
+[SERVER] Encrypted message (hex): FC D8 5E 1D 8E F8 3A 42 6F 99 24 10 E2 E1 CC FD AE 92 01 B2 B3 6B D8 D7 8F 3E 2D 97 A8 8C 4F 26 C3 22 EE 38 69 FD 
+[SERVER] Decrypted message: Hello, PQC-secured World with BIKE-L1!
+[SERVER] Decrypted message length: 38 bytes

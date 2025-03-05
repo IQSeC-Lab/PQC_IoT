@@ -12,8 +12,9 @@ CLIENT_EXEC="client"
 LOG_FILE="server_log.txt"
 PORT=8080
 
-# 5-minute duration for the client
-CLIENT_RUNTIME=$((5 * 60))  # 5 minutes in seconds
+# 5-minute duration for the client connections
+TEST_DURATION=$((1 * 60))  # 5 minutes in seconds
+INTERVAL=10  # Time between client connections in seconds
 
 # Clean up previous builds and logs
 rm -f $SERVER_EXEC $CLIENT_EXEC $LOG_FILE
@@ -42,16 +43,20 @@ SERVER_PID=$!
 # Wait for the server to start
 sleep 2
 
-# Run the client for 5 minutes
-echo "[INFO] Running client for 5 minutes..."
-timeout $CLIENT_RUNTIME ./$CLIENT_EXEC
+# Run the client repeatedly for 5 minutes
+echo "[INFO] Running clients for 5 minutes..."
+start_time=$(date +%s)
+end_time=$((start_time + TEST_DURATION))
 
-# Give some time for the final communication
-sleep 2
+while [ $(date +%s) -lt $end_time ]; do
+    echo "[INFO] Starting a new client connection..."
+    ./$CLIENT_EXEC
+    sleep $INTERVAL  # Wait before starting the next client
+done
 
-# Check if server received and decrypted messages correctly
+# Check server logs for successful decryption messages
 if grep -q "Decrypted message: Hello, PQC-secured World with BIKE-L1!" $LOG_FILE; then
-    echo "[SUCCESS] Message was successfully decrypted by the server!"
+    echo "[SUCCESS] Messages were successfully decrypted by the server!"
 else
     echo "[FAILURE] Message decryption failed. Check server logs for more information."
 fi

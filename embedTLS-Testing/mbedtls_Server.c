@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <oqs/oqs.h>
 #include <mbedtls/gcm.h>
+#include <time.h>
 
 #define PORT 8080
 #define BUFFER_SIZE 2048  // 2KB memory allocation
@@ -40,11 +41,11 @@ int aes_gcm_decrypt(uint8_t *ciphertext, size_t cipher_len, uint8_t *aes_key, ui
     mbedtls_gcm_free(&gcm);
 
     if (ret != 0) {
-        printf("[SERVER] Decryption failed!\n");
+        printf("[SERVER] AES-GCM decryption failed!\n");
         return -1;
     }
 
-    return (int)cipher_len;  // Return decrypted length
+    return (int)cipher_len;
 }
 
 // Handle client connection and perform key exchange using BIKE-KEM
@@ -58,7 +59,6 @@ void handle_client(int client_socket) {
         return;
     }
 
-    // Allocate memory for key pair
     uint8_t *public_key = malloc(kem->length_public_key);
     uint8_t *secret_key = malloc(kem->length_secret_key);
     uint8_t *ciphertext = malloc(kem->length_ciphertext);
@@ -69,25 +69,21 @@ void handle_client(int client_socket) {
         goto cleanup;
     }
 
-    // Generate key pair
     if (OQS_KEM_keypair(kem, public_key, secret_key) != OQS_SUCCESS) {
         printf("[ERROR] Failed to generate BIKE-L1 key pair!\n");
         goto cleanup;
     }
 
-    // Send public key to client
     if (send(client_socket, public_key, kem->length_public_key, 0) != (int)kem->length_public_key) {
         printf("[ERROR] Failed to send public key!\n");
         goto cleanup;
     }
 
-    // Receive encapsulated secret from client
     if (recv(client_socket, ciphertext, kem->length_ciphertext, 0) != (int)kem->length_ciphertext) {
         printf("[ERROR] Failed to receive ciphertext!\n");
         goto cleanup;
     }
 
-    // Decapsulate shared secret
     if (OQS_KEM_decaps(kem, shared_secret, ciphertext, secret_key) != OQS_SUCCESS) {
         printf("[ERROR] Key decapsulation failed!\n");
         goto cleanup;
@@ -95,32 +91,35 @@ void handle_client(int client_socket) {
 
     printf("[SERVER] Key exchange complete! Shared secret established.\n");
 
-    // Receive encrypted data
-    uint8_t iv[AES_IV_SIZE];
-    uint8_t encrypted_msg[BUFFER_SIZE];
-    uint8_t tag[AES_TAG_SIZE];
-    size_t encrypted_len;
+    while (1) {  // Run indefinitely
+        uint8_t iv[AES_IV_SIZE];
+        uint8_t encrypted_msg[BUFFER_SIZE];
+        uint8_t tag[AES_TAG_SIZE];
+        size_t encrypted_len;
 
-    if (recv_encrypted_message(client_socket, iv, encrypted_msg, &encrypted_len, tag) < 0) {
-        perror("[SERVER] Failed to receive encrypted message");
-        goto cleanup;
-    }
+        if (recv_encrypted_message(client_socket, iv, encrypted_msg, &encrypted_len, tag) < 0) {
+            perror("[SERVER] Failed to receive encrypted message");
+            break;  // Exit the loop if receiving fails
+        }
 
-    printf("[SERVER] Received AES-GCM Tag: ");
-    for (int i = 0; i < AES_TAG_SIZE; i++) {
-        printf("%02X ", tag[i]);  // Print in hex format
-    }
-    printf("\n");
-    
+        // 🛠 Print the encrypted message in hex format
+        printf("[SERVER] Received encrypted message of length: %zu bytes\n", encrypted_len);
+        printf("[SERVER] Encrypted message (hex): ");
+        for (size_t i = 0; i < encrypted_len; i++) {
+            printf("%02X ", encrypted_msg[i]);
+        }
+        printf("\n");
 
-    // Decrypt message with AES-GCM using shared secret as key
-    uint8_t decrypted_msg[BUFFER_SIZE] = {0};
-    int decrypted_len = aes_gcm_decrypt(encrypted_msg, encrypted_len, shared_secret, iv, decrypted_msg, tag);
+        uint8_t decrypted_msg[BUFFER_SIZE] = {0};
+        int decrypted_len = aes_gcm_decrypt(encrypted_msg, encrypted_len, shared_secret, iv, decrypted_msg, tag);
 
-    if (decrypted_len < 0) {
-        printf("[SERVER] AES-GCM decryption failed!\n");
-    } else {
-        printf("[SERVER] Decrypted message: %s\n", decrypted_msg);
+        if (decrypted_len < 0) {
+            printf("[SERVER] AES-GCM decryption failed!\n");
+        } else {
+            // 🛠 Print the decrypted message as a string
+            printf("[SERVER] Decrypted message: %s\n", decrypted_msg);
+            printf("[SERVER] Decrypted message length: %d bytes\n", decrypted_len);
+        }
     }
 
 cleanup:
@@ -149,21 +148,32 @@ int main() {
 
     if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");
+        close(server_socket);
         exit(1);
     }
 
     listen(server_socket, 5);
     printf("[SERVER] Listening on port %d...\n", PORT);
 
-    client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &addr_size);
-    if (client_socket < 0) {
-        perror("Client accept failed");
-        exit(1);
+    while (1) {
+        client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &addr_size);
+        if (client_socket < 0) {
+            perror("Client accept failed");
+            continue;
+        }
+
+        printf("[SERVER] Accepted a new client connection.\n");
+
+        if (fork() == 0) {  // Child process
+            close(server_socket);  // Close listening socket in child
+            handle_client(client_socket);
+            close(client_socket);
+            exit(0);
+        }
+
+        close(client_socket);  // Close client socket in parent process
     }
 
-    handle_client(client_socket);
     close(server_socket);
-
     return 0;
 }
-
