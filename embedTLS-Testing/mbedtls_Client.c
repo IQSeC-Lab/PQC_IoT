@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <oqs/oqs.h>
+#include <time.h>
 #include <mbedtls/gcm.h>
 
 #define SERVER_IP "127.0.0.1"
@@ -53,6 +54,12 @@ int main() {
     struct sockaddr_in server_addr;
     uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
     uint8_t iv[AES_IV_SIZE];
+
+    // we are going to run the client for 5 minutes to simulate conversations
+    time_t start_time = time(NULL);
+    time_t end_time = start_time + 5 * 60; // 5 minutes
+
+
 
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
