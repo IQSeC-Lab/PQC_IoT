@@ -1,15 +1,23 @@
 #!/bin/bash
 
-# Paths to the source files
-SERVER_SRC="mbedtls_Server.c"
-CLIENT_SRC="mbedtls_Client.c"
+# Paths to the source always connected
+SERVER_SRC_alwaysconnected="mbedtls_Server.c"
+CLIENT_SRC_alwaysconnected="mbedtls_Client.c"
+
+# Path to source from reconnections
+SERVER_SRC_alwaysconnected="mbedtls_Server.c"
+CLIENT_SRC_alwaysconnected="mbedtls_Client.c"
 
 # Executable names
-SERVER_EXEC="server"
-CLIENT_EXEC="client"
+SERVER_EXEC_ta="serverAlways"
+CLIENT_EXEC_ta="clientAlways"
+
+SERVER_EXEC_tr="serverReconnections"
+CLIENT_EXEC_tr="clientReconnections"
 
 # Ports and log files
-LOG_FILE="server_log.txt"
+LOG_FILE_always="server_log.txt"
+LOG_FILE_reconnections="server_log_reconnections.txt"
 PORT=8080
 
 # 5-minute duration for the client connections
