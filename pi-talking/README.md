@@ -1,6 +1,7 @@
 # Test Case: Raspberry pi
 
-This test case is developed to simulate the communication between two raspberry pi's using PQC for authentication
+This test case is developed to simulate the communication between two raspberry pi's using PQC for authentication.
+The server is always listening and the client is connecting and recconnecting.
 
 ## Requirements
 
@@ -32,3 +33,10 @@ This test case is developed to simulate the communication between two raspberry 
 ping 192.168.1.102  # Run this from Raspberry Pi 1
 ping 192.168.1.101  # Run this from Raspberry Pi 2
 ```
+
+## Disclaimer
+
+In this example:
+
+- 101 is for the server
+- 102 is the client

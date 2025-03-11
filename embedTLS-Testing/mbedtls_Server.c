@@ -6,6 +6,7 @@
 #include <oqs/oqs.h>
 #include <mbedtls/gcm.h>
 #include <time.h>
+#include <errno.h>
 
 #define PORT 8080
 #define BUFFER_SIZE 2048  // 2KB memory allocation
@@ -24,6 +25,7 @@ int recv_encrypted_message(int client_socket, uint8_t *iv, uint8_t *ciphertext, 
     *cipher_len = bytes_received;
     return 0;
 }
+
 
 // AES-GCM decryption function using mbedTLS
 int aes_gcm_decrypt(uint8_t *ciphertext, size_t cipher_len, uint8_t *aes_key, uint8_t *iv, uint8_t *plaintext, uint8_t *tag) {
@@ -98,9 +100,12 @@ void handle_client(int client_socket) {
         size_t encrypted_len;
 
         if (recv_encrypted_message(client_socket, iv, encrypted_msg, &encrypted_len, tag) < 0) {
-            perror("[SERVER] Failed to receive encrypted message");
+            perror("[SERVER] client closed connection");
+            printf("[DEBUG] Errno: %d (%s)\n", errno, strerror(errno)); // Print detailed error message
             break;  // Exit the loop if receiving fails
         }
+        
+        
 
         // 🛠 Print the encrypted message in hex format
         printf("[SERVER] Received encrypted message of length: %zu bytes\n", encrypted_len);
