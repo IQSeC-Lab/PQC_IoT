@@ -9,7 +9,7 @@ There are a couple ways to install liboqs here we are going to layout some of th
 
 These are going to be required across almost all the implementations of liboqs:
 
-1. first update your system
+1. First update your system
 
 ```
 sudo apt update -y
@@ -28,7 +28,7 @@ openssl version
 sudo apt install astyle cmake gcc ninja-build libssl-dev python3-pytest python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind
 ```
 
-# Installation of C Impleentation
+# Installation of C Implementation
 
 1. run this in the terminal
 
@@ -36,7 +36,24 @@ sudo apt install astyle cmake gcc ninja-build libssl-dev python3-pytest python3-
 git clone --depth=1 https://github.com/open-quantum-safe/liboqs
 cd ~/Desktop/liboqs
 mkdir -p build && cd build
-cmake .. -G Ninja
+cmake .. -G Ninja \ 
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DOQS_ALGS_ENABLED=All \
+    -DOQS_ENABLE_KEM_ALG=ON \
+    -DOQS_ENABLE_SIG_ALG=ON \
+    -DOQS_ENABLE_SIG_STFL_ALG=ON \
+    -DOQS_BUILD_ONLY_LIB=OFF \
+    -DOQS_DIST_BUILD=ON \
+    -DOQS_USE_OPENSSL=ON \
+    -DOQS_ENABLE_TEST_CONSTANT_TIME=ON \
+    -DOQS_OPT_TARGET=auto \
+    -DOQS_SPEED_USE_ARM_PMU=OFF \
+    -DUSE_SANITIZER=Address \
+    -DOQS_ENABLE_LIBJADE_KEM_ALG=ON \
+    -DOQS_ENABLE_LIBJADE_SIG_ALG=ON \
+    -DOQS_BUILD_FUZZ_TESTS=ON
 ninja
 sudo ninja install
 ```

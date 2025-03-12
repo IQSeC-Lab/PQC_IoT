@@ -1,3 +1,6 @@
+// C program to perform key exchange with BIKE-L1 and encrypt a message using AES-GCM with mbedTLS
+// Compile with:
+// gcc -o mbedtls_Client mbedtls_Client.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

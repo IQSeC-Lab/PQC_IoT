@@ -1,6 +1,6 @@
 # Installing mbedtls
 
-1. First, Install the dependencies necessaries for mbedtls:
+1. First, install the necessary dependencies for mbedtls:
    _Note:_ Make sure that jinja2, jsonschema, is installed and that everything is updated.
 
 ```
@@ -15,24 +15,35 @@ git clone https://github.com/Mbed-TLS/mbedtls.git
 
 ```
 cd mbedtls
-cmake ..
-```
-
-**Note**: if cmake returns an error saying that the CMakeList.txt file is not found Run the following command:
-
-```
-git submodule update --init or git submodule update --init  --recursive
-rm -rf build
+git submodule update --init or git submodule update --init  --recursive //(either or is fine)
 mkdir build
 cd build
 cmake ..
 ```
 
-Note: Make sure that you cd to the mbedtls directory to run the following command
+Then 
 
 ```
 make -j$(nproc)
 sudo make install
+```
+Afterwards install this:
+```
+sudo apt install libmbedtls-dev
+```
+To double check that the library was install run:
+```
+ldconfig -p | grep mbedcrypto
+```
+You should see some something like:
+```
+libmbedcrypto.so.7 (libc6,xxx) => /lib/xxx-linux-gnu/libmbedcrypto.so.7
+libmbedcrypto.so (libc6,xxx) => /lib/xxx-linux-gnu/libmbedcrypto.so
+```
+Then:
+
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
 When compiling code with mbedtls use:
@@ -40,5 +51,4 @@ When compiling code with mbedtls use:
 ```
 // This is for the client
 gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs
-
 ```
