@@ -24,7 +24,7 @@ The Initialization Vector is a random value used in symmetric encryption algorit
 
 **AES_TAG_SIZE:** Defines the size of the authentication tag as 16 bytes (128 bits), ensuring integrity in AES-GCM encryption
 
-The authentication tag is used to ensure data integrity and authenticity by verifying that the ciphertext hasn't been tampered with during transmissio or storage.
+The authentication tag is used to ensure data integrity and authenticity by verifying that the ciphertext hasn't been tampered with during transmission or storage.
 
 ##
 ## What is AES-GCM?
@@ -44,11 +44,6 @@ There are two outputs:
 1. The ciphertext, which is exactly the same length as the plaintext.
 2. An authentication tag (the "tag"). 
 Sometimes called the message authentication code (MAC) or integrity check value (ICV).
-
-
-
-
-
 
 
 https://csrc.nist.gov/csrc/media/Events/2023/third-workshop-on-block-cipher-modes-of-operation/documents/accepted-papers/Practical%20Challenges%20with%20AES-GCM.pdf
