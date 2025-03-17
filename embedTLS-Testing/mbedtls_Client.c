@@ -12,7 +12,7 @@
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 8080
-#define BUFFER_SIZE 2048  // 2KB for messages
+#define BUFFER_SIZE 2048   // 2KB for messages
 #define AES_KEY_SIZE 32    // 256-bit AES key
 #define AES_IV_SIZE 12     // 96-bit IV for GCM
 #define AES_TAG_SIZE 16    // AES-GCM tag
