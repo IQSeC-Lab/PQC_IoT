@@ -70,7 +70,7 @@ Then:
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
-When compiling code with mbedtls and oenssl use:
+When compiling code with mbedtls and openssl use:
 
 ```
 // This is for the client
