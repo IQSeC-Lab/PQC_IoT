@@ -1,7 +1,31 @@
-# Installing mbedtls
+# Installation of MbedTLS
+Note: You must have OpenSSL already installed in your machine to be able to compile the code.
+The client code uses OpenSSL to generate a random iv necessary for AES-GCM encryption. 
+
+To check that you do have OpenSSL installed in your machine run:
+```
+openssl --version
+```
+or :
+```
+which openssl
+```
+This code uses OpenSSL 3.2.0 23 Nov 2023 (Library: OpenSSL 3.4.0 22 Oct 2024) version
+
+To install OpenSSL in case you don't have it, run:
+```
+sudo apt update
+sudo apt install openssl libssl-dev
+```
+Verify with:
+```
+ls /usr/include/openssl
+```
+
+
+## Installing mbedtls
 
 1. First, install the necessary dependencies for mbedtls:
-   _Note:_ Make sure that jinja2, jsonschema, is installed and that everything is updated.
 
 ```
 sudo apt update && sudo apt install -y python3-jinja2 python3-jsonschema
@@ -46,9 +70,9 @@ Then:
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
-When compiling code with mbedtls use:
+When compiling code with mbedtls and oenssl use:
 
 ```
 // This is for the client
-gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs
+gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
 ```

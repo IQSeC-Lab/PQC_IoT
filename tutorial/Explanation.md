@@ -21,6 +21,7 @@ The code contains the following #define statements that are used to define const
 **AES_IV_SIZE:** Specifies the size of the IV (Initialization Vector) as 12 bytes (96 bits), which is standard for AES-GCM.
 
 The Initialization Vector is a random value used in symmetric encryption algorithms to ensure that the same plaintext, encrypted with the same key, produces a new ciphertext every time.
+Here we are using OpenSSL's Rand_Byte to generate secure random IV's.
 
 **AES_TAG_SIZE:** Defines the size of the authentication tag as 16 bytes (128 bits), ensuring integrity in AES-GCM encryption
 
