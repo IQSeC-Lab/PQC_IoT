@@ -1,6 +1,6 @@
 // C program to perform key exchange with BIKE-L1 and encrypt a message using AES-GCM with mbedTLS
 // Compile with:
-// gcc -o mbedtls_Client mbedtls_Client.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto
+// gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +9,7 @@
 #include <oqs/oqs.h>
 #include <time.h>
 #include <mbedtls/gcm.h>
+#include <openssl/rand.h>
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 8080
@@ -36,9 +37,12 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
         return -1;
     }
 
-    // Generate random IV (for testing, use a cryptographic RNG in production)
-    for (int i = 0; i < AES_IV_SIZE; i++)
-        iv[i] = rand() % 256;
+    // Generate random IV for AES-GCM using OpenSSL for secure random bytes
+    if (RAND_bytes(iv, AES_IV_SIZE) != 1) {
+        printf("[ERROR] Failed to generate random IV!\n");
+        mbedtls_gcm_free(&gcm);
+        return -1;
+    }
 
     int ret = mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT, len, iv, AES_IV_SIZE, NULL, 0, plaintext, ciphertext, AES_TAG_SIZE, tag);
 

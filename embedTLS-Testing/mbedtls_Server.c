@@ -2,7 +2,7 @@
 // Upon connection, the server performs a key exchange with the client using BIKE-L1 KEM.   
 // The server then receives an encrypted message from the client, decrypts it using AES-GCM, and prints the decrypted message.
 // Compile with:
-// gcc -o mbedtls_Server mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto
+// gcc -o mbedtls_Server mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,10 +56,8 @@ int aes_gcm_decrypt(uint8_t *ciphertext, size_t cipher_len, uint8_t *aes_key, ui
 }
 
 // Handle client connection and perform key exchange using BIKE-KEM
-// change this function so that it uses OQS
 void handle_client(int client_socket) {
     printf("[SERVER] Client connected. Performing key exchange with BIKE-L1...\n");
-    //change this line to use OQS
     OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l1);
     if (!kem) {
         printf("[ERROR] Failed to initialize BIKE-L1 KEM!\n");
@@ -76,7 +74,6 @@ void handle_client(int client_socket) {
         printf("[ERROR] Memory allocation failed!\n");
         goto cleanup;
     }
-    //this line too
     if (OQS_KEM_keypair(kem, public_key, secret_key) != OQS_SUCCESS) {
         printf("[ERROR] Failed to generate BIKE-L1 key pair!\n");
         goto cleanup;
@@ -91,7 +88,6 @@ void handle_client(int client_socket) {
         printf("[ERROR] Failed to receive ciphertext!\n");
         goto cleanup;
     }
-    //this line too
     if (OQS_KEM_decaps(kem, shared_secret, ciphertext, secret_key) != OQS_SUCCESS) {
         printf("[ERROR] Key decapsulation failed!\n");
         goto cleanup;
@@ -113,7 +109,7 @@ void handle_client(int client_socket) {
         
         
 
-        // 🛠 Print the encrypted message in hex format
+        //Print the encrypted message in hex format
         printf("[SERVER] Received encrypted message of length: %zu bytes\n", encrypted_len);
         printf("[SERVER] Encrypted message (hex): ");
         for (size_t i = 0; i < encrypted_len; i++) {
@@ -134,7 +130,6 @@ void handle_client(int client_socket) {
     }
 
 cleanup:
-//maybe this too change this to use OQS
     OQS_MEM_secure_free(public_key, kem->length_public_key);
     OQS_MEM_secure_free(secret_key, kem->length_secret_key);
     OQS_MEM_secure_free(ciphertext, kem->length_ciphertext);
