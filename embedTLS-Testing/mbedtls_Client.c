@@ -59,7 +59,8 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
 int main() {
     int client_socket;
     struct sockaddr_in server_addr;
-    uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
+
+    //uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
     uint8_t iv[AES_IV_SIZE];
 
     // we are going to run the client for 5 minutes to simulate conversations
@@ -121,6 +122,16 @@ int main() {
 
     printf("[CLIENT] Key exchange complete! Encrypting message with AES-GCM using mbedTLS...\n");
 
+    //Simulate a network communication using a file 
+    char message[BUFFER_SIZE] = {0};
+    FILE *fp = fopen("networkSim.txt", "r");
+    if (!fp) {
+        perror("[ERROR] Failed to open input.txt");
+        exit(1);
+    }
+    fread(message, 1, BUFFER_SIZE - 1, fp);
+    fclose(fp);
+
     // Encrypt message with AES-GCM using shared_secret as key
     uint8_t encrypted_msg[BUFFER_SIZE];
     uint8_t tag[AES_TAG_SIZE];
@@ -142,7 +153,7 @@ int main() {
         printf("%02X ", tag[i]);  // Print in hex format
     }    
 
-    printf("[CLIENT] Encrypted message sent successfully!\n");
+    printf("\n[CLIENT] Encrypted message sent successfully!\n");
 
 cleanup:
     OQS_MEM_secure_free(public_key, kem->length_public_key);

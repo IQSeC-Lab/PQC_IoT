@@ -111,7 +111,7 @@ void handle_client(int client_socket) {
 
         //Print the encrypted message in hex format
         printf("[SERVER] Received encrypted message of length: %zu bytes\n", encrypted_len);
-        printf("[SERVER] Encrypted message (hex): ");
+        printf("[SERVER] Encrypted message (hex): \n");
         for (size_t i = 0; i < encrypted_len; i++) {
             printf("%02X ", encrypted_msg[i]);
         }
