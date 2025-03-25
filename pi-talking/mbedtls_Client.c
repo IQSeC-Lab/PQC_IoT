@@ -1,3 +1,6 @@
+// C program to perform key exchange with BIKE-L1 and encrypt a message using AES-GCM with mbedTLS
+// Compile with:
+// gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,10 +9,11 @@
 #include <oqs/oqs.h>
 #include <time.h>
 #include <mbedtls/gcm.h>
+#include <openssl/rand.h>
 
-#define SERVER_IP "192.168.1.101" // This is the IP of the server
+#define SERVER_IP "127.0.0.1"
 #define PORT 8080
-#define BUFFER_SIZE 2048  // 2KB for messages
+#define BUFFER_SIZE 2048   // 2KB for messages
 #define AES_KEY_SIZE 32    // 256-bit AES key
 #define AES_IV_SIZE 12     // 96-bit IV for GCM
 #define AES_TAG_SIZE 16    // AES-GCM tag
@@ -33,9 +37,12 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
         return -1;
     }
 
-    // Generate random IV (for testing, use a cryptographic RNG in production)
-    for (int i = 0; i < AES_IV_SIZE; i++)
-        iv[i] = rand() % 256;
+    // Generate random IV for AES-GCM using OpenSSL for secure random bytes
+    if (RAND_bytes(iv, AES_IV_SIZE) != 1) {
+        printf("[ERROR] Failed to generate random IV!\n");
+        mbedtls_gcm_free(&gcm);
+        return -1;
+    }
 
     int ret = mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT, len, iv, AES_IV_SIZE, NULL, 0, plaintext, ciphertext, AES_TAG_SIZE, tag);
 
@@ -52,7 +59,8 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
 int main() {
     int client_socket;
     struct sockaddr_in server_addr;
-    uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
+
+    //uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
     uint8_t iv[AES_IV_SIZE];
 
     // we are going to run the client for 5 minutes to simulate conversations
@@ -114,6 +122,16 @@ int main() {
 
     printf("[CLIENT] Key exchange complete! Encrypting message with AES-GCM using mbedTLS...\n");
 
+    //Simulate a network communication using a file 
+    char message[BUFFER_SIZE] = {0};
+    FILE *fp = fopen("networkSim.txt", "r");
+    if (!fp) {
+        perror("[ERROR] Failed to open input.txt");
+        exit(1);
+    }
+    fread(message, 1, BUFFER_SIZE - 1, fp);
+    fclose(fp);
+
     // Encrypt message with AES-GCM using shared_secret as key
     uint8_t encrypted_msg[BUFFER_SIZE];
     uint8_t tag[AES_TAG_SIZE];
@@ -135,7 +153,7 @@ int main() {
         printf("%02X ", tag[i]);  // Print in hex format
     }    
 
-    printf("[CLIENT] Encrypted message sent successfully!\n");
+    printf("\n[CLIENT] Encrypted message sent successfully!\n");
 
 cleanup:
     OQS_MEM_secure_free(public_key, kem->length_public_key);

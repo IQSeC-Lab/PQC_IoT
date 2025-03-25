@@ -1,10 +1,12 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -I/home/ubuntu/Desktop/liboqs/include \
-         -I/home/ubuntu/path/to/mbedtls/include
+         -I/home/ubuntu/path/to/mbedtls/include \
+		 -I/home/ubuntu/path/to/OpenSSL/include \
 LDFLAGS = -L/home/ubuntu/Desktop/liboqs/build \
           -L/home/ubuntu/path/to/mbedtls/library \
-          -loqs -lmbedtls -lmbedx509 -lmbedcrypto -lm -lssl -lcrypto \
+		  -L/home/ubuntu/path/to/OpenSSL/library \
+          -loqs -lcrypto -lssl -lmbedtls -lmbedx509 -lmbedcrypto -lm \
           -Wl,-rpath,/home/ubuntu/Desktop/liboqs/build
 
 # Source files for each executable
