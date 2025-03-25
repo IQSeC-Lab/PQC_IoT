@@ -4,7 +4,7 @@ CFLAGS = -I/home/ubuntu/Desktop/liboqs/include \
          -I/home/ubuntu/path/to/mbedtls/include
 LDFLAGS = -L/home/ubuntu/Desktop/liboqs/build \
           -L/home/ubuntu/path/to/mbedtls/library \
-          -loqs -lmbedtls -lmbedx509 -lmbedcrypto -lm \
+          -loqs -lmbedtls -lmbedx509 -lmbedcrypto -lm -lssl -lcrypto \
           -Wl,-rpath,/home/ubuntu/Desktop/liboqs/build
 
 # Source files for each executable
