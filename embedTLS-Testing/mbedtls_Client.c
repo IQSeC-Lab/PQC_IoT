@@ -20,6 +20,7 @@
 
 // Function to send encrypted message to the server
 int send_encrypted_message(int client_socket, uint8_t *iv, uint8_t *ciphertext, size_t cipher_len, uint8_t *tag) {
+    // sleep(1);
     if (send(client_socket, iv, AES_IV_SIZE, 0) != AES_IV_SIZE) return -1;
     if (send(client_socket, tag, AES_TAG_SIZE, 0) != AES_TAG_SIZE) return -1;
     if (send(client_socket, ciphertext, cipher_len, 0) != (int)cipher_len) return -1;
@@ -68,7 +69,7 @@ int main() {
     time_t end_time = start_time + 5 * 60; // 5 minutes
 
 
-
+    
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
         perror("[ERROR] Socket creation failed");
@@ -121,7 +122,7 @@ int main() {
     }
 
     printf("[CLIENT] Key exchange complete! Encrypting message with AES-GCM using mbedTLS...\n");
-
+    // sleep(1);
     //Simulate a network communication using a file 
     char message[BUFFER_SIZE] = {0};
     FILE *fp = fopen("networkSim.txt", "r");

@@ -2,7 +2,7 @@
 // Upon connection, the server performs a key exchange with the client using BIKE-L1 KEM.   
 // The server then receives an encrypted message from the client, decrypts it using AES-GCM, and prints the decrypted message.
 // Compile with:
-// gcc -o mbedtls_Server mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib
+// gcc -o server mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
