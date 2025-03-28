@@ -1,4 +1,4 @@
-// C program to perform key exchange with BIKE-L1 and encrypt a message using AES-GCM with mbedTLS
+// Client that performs BIKE/CRYSTALS/HQC key exchange and encrypts a message with AES-GCM
 // Compile with:
 // gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
 
@@ -11,16 +11,15 @@
 #include <time.h>
 #include <mbedtls/gcm.h>
 #include <openssl/rand.h>
-#include <openssl/sha.h>  // ✅ For SHA256
+#include <openssl/sha.h>
 
-#define SERVER_IP "192.168.1.101"
+#define SERVER_IP "192.168.1.101"  // ← IP de tu Raspberry Pi
 #define PORT 8080
-#define BUFFER_SIZE 2048   // 2KB for messages
-#define AES_KEY_SIZE 32    // 256-bit AES key
-#define AES_IV_SIZE 12     // 96-bit IV for GCM
-#define AES_TAG_SIZE 16    // AES-GCM tag
+#define BUFFER_SIZE 2048
+#define AES_KEY_SIZE 32
+#define AES_IV_SIZE 12
+#define AES_TAG_SIZE 16
 
-// Function to send encrypted message to the server
 int send_encrypted_message(int client_socket, uint8_t *iv, uint8_t *ciphertext, size_t cipher_len, uint8_t *tag) {
     if (send(client_socket, iv, AES_IV_SIZE, 0) != AES_IV_SIZE) return -1;
     if (send(client_socket, tag, AES_TAG_SIZE, 0) != AES_TAG_SIZE) return -1;
@@ -28,7 +27,6 @@ int send_encrypted_message(int client_socket, uint8_t *iv, uint8_t *ciphertext, 
     return 0;
 }
 
-// AES-GCM encryption function using mbedTLS
 int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned char *aes_key, unsigned char *iv, unsigned char *ciphertext, unsigned char *tag) {
     mbedtls_gcm_context gcm;
     mbedtls_gcm_init(&gcm);
@@ -39,7 +37,6 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
         return -1;
     }
 
-    // Generate random IV for AES-GCM using OpenSSL for secure random bytes
     if (RAND_bytes(iv, AES_IV_SIZE) != 1) {
         printf("[ERROR] Failed to generate random IV!\n");
         mbedtls_gcm_free(&gcm);
@@ -47,7 +44,6 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
     }
 
     int ret = mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT, len, iv, AES_IV_SIZE, NULL, 0, plaintext, ciphertext, AES_TAG_SIZE, tag);
-
     mbedtls_gcm_free(&gcm);
 
     if (ret != 0) {
@@ -55,7 +51,7 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
         return -1;
     }
 
-    return (int)len;  // Return ciphertext length
+    return (int)len;
 }
 
 int main() {
@@ -80,21 +76,18 @@ int main() {
 
     printf("[CLIENT] Connected to server. Performing key exchange...\n");
 
- // Select your KEM here
-    //KEM
+    // Select KEM here
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l1);
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l3);
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l5);
 
-    //kyber
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_512);
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_768);
-    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_1024);
+    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_1024);
 
-    //HQC
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_128);
     // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_192);
-    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_256);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_256);
 
     if (!kem) {
         printf("[ERROR] Failed to initialize KEM!\n");
@@ -111,41 +104,41 @@ int main() {
     }
 
     if (recv(client_socket, public_key, kem->length_public_key, 0) != (int)kem->length_public_key) {
-        printf("[ERROR] Failed to receive public key!\n");
+        printf("[ERROR] Failed to receive public key from server!\n");
         goto cleanup;
     }
 
     if (OQS_KEM_encaps(kem, ciphertext, shared_secret, public_key) != OQS_SUCCESS) {
-        printf("[ERROR] Key encapsulation failed!\n");
+        printf("[ERROR] KEM encapsulation failed!\n");
         goto cleanup;
     }
 
     if (send(client_socket, ciphertext, kem->length_ciphertext, 0) != (int)kem->length_ciphertext) {
-        printf("[ERROR] Failed to send ciphertext!\n");
+        printf("[ERROR] Failed to send ciphertext to server!\n");
         goto cleanup;
     }
 
-    printf("[CLIENT] Key exchange complete! Encrypting message with AES-GCM using mbedTLS...\n");
+    printf("[CLIENT] Key exchange complete. Shared secret established.\n");
+
+    // Derive AES key from shared secret
+    uint8_t aes_key[32];
+    SHA256(shared_secret, kem->length_shared_secret, aes_key);
 
     // Read message from file
     char message[BUFFER_SIZE] = {0};
     FILE *fp = fopen("networkSim.txt", "r");
     if (!fp) {
         perror("[ERROR] Failed to open networkSim.txt");
-        exit(1);
+        goto cleanup;
     }
     fread(message, 1, BUFFER_SIZE - 1, fp);
     fclose(fp);
 
-    uint8_t aes_key[32];
-    SHA256(shared_secret, kem->length_shared_secret, aes_key);
-
     uint8_t encrypted_msg[BUFFER_SIZE];
     uint8_t tag[AES_TAG_SIZE];
-    int encrypted_len = aes_gcm_encrypt((unsigned char *)message, strlen(message), aes_key, iv, encrypted_msg, tag);
+    int encrypted_len = aes_gcm_encrypt((unsigned char*)message, strlen(message), aes_key, iv, encrypted_msg, tag);
 
     if (encrypted_len < 0) {
-        printf("[CLIENT] AES-GCM encryption failed!\n");
         goto cleanup;
     }
 
@@ -154,12 +147,12 @@ int main() {
         goto cleanup;
     }
 
+    printf("[CLIENT] Encrypted message sent successfully.\n");
     printf("[CLIENT] AES-GCM Tag: ");
     for (int i = 0; i < AES_TAG_SIZE; i++) {
         printf("%02X ", tag[i]);
     }
-
-    printf("\n[CLIENT] Encrypted message sent successfully!\n");
+    printf("\n");
 
 cleanup:
     OQS_MEM_secure_free(public_key, kem->length_public_key);
@@ -167,6 +160,5 @@ cleanup:
     OQS_MEM_secure_free(shared_secret, kem->length_shared_secret);
     OQS_KEM_free(kem);
     close(client_socket);
-
     return 0;
 }

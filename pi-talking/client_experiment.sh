@@ -1,20 +1,22 @@
 #!/bin/bash
 
-# Prompt for client binary name (without ./)
-read -p "🟢Enter client binary name (e.g., client): " CLIENT_INPUT
+read -p "Enter client binary name (e.g., client): " CLIENT_INPUT
 
-# Auto-prepend ./ to the name
-CLIENT_BIN="./$CLIENT_INPUT"
+
+CLIENT_FOLDER="client_t"
+
+# Auto-prepend folder path and ./ to the binary
+CLIENT_BIN="./$CLIENT_FOLDER/$CLIENT_INPUT"
 
 # Check if it exists and is executable
 if [ ! -x "$CLIENT_BIN" ]; then
-    echo " Error: '$CLIENT_BIN' is not executable or not found."
+    echo "Error: '$CLIENT_BIN' is not executable or not found in ./$CLIENT_FOLDER/"
     exit 1
 fi
 
 # Prepare CSV log filename
 LOG_FILE="${CLIENT_INPUT}_benchmark.csv"
-DURATION=300  # in seconds
+DURATION=300  # 5 minutes in seconds
 START_TIME=$(date +%s)
 
 echo "Client benchmarking started at $(date)"
@@ -35,4 +37,4 @@ while [ $(($(date +%s) - START_TIME)) -lt $DURATION ]; do
     sleep 5
 done
 
-echo "✅ Client finished at $(date)"
+echo "Client finished at $(date)"
