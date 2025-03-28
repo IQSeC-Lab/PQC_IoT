@@ -1,6 +1,7 @@
 // C program to perform key exchange with BIKE-L1 and encrypt a message using AES-GCM with mbedTLS
 // Compile with:
 // gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,8 +11,9 @@
 #include <time.h>
 #include <mbedtls/gcm.h>
 #include <openssl/rand.h>
+#include <openssl/sha.h>  // ✅ For SHA256
 
-#define SERVER_IP "127.0.0.1"
+#define SERVER_IP "192.168.1.101"
 #define PORT 8080
 #define BUFFER_SIZE 2048   // 2KB for messages
 #define AES_KEY_SIZE 32    // 256-bit AES key
@@ -59,15 +61,7 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
 int main() {
     int client_socket;
     struct sockaddr_in server_addr;
-
-    //uint8_t message[] = "Hello, PQC-secured World with BIKE-L1!";
     uint8_t iv[AES_IV_SIZE];
-
-    // we are going to run the client for 5 minutes to simulate conversations
-    time_t start_time = time(NULL);
-    time_t end_time = start_time + 5 * 60; // 5 minutes
-
-
 
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
@@ -84,15 +78,29 @@ int main() {
         exit(1);
     }
 
-    printf("[CLIENT] Connected to server. Performing key exchange with BIKE-L1...\n");
+    printf("[CLIENT] Connected to server. Performing key exchange...\n");
 
-    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l1);
+ // Select your KEM here
+    //KEM
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l1);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l3);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_bike_l5);
+
+    //kyber
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_512);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_768);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_1024);
+
+    //HQC
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_128);
+    // OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_192);
+    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_hqc_256);
+
     if (!kem) {
-        printf("[ERROR] Failed to initialize BIKE-L1 KEM!\n");
+        printf("[ERROR] Failed to initialize KEM!\n");
         exit(1);
     }
 
-    // Allocate memory for key exchange
     uint8_t *public_key = malloc(kem->length_public_key);
     uint8_t *ciphertext = malloc(kem->length_ciphertext);
     uint8_t *shared_secret = malloc(kem->length_shared_secret);
@@ -102,19 +110,16 @@ int main() {
         goto cleanup;
     }
 
-    // Receive server's public key
     if (recv(client_socket, public_key, kem->length_public_key, 0) != (int)kem->length_public_key) {
         printf("[ERROR] Failed to receive public key!\n");
         goto cleanup;
     }
 
-    // Generate shared secret
     if (OQS_KEM_encaps(kem, ciphertext, shared_secret, public_key) != OQS_SUCCESS) {
         printf("[ERROR] Key encapsulation failed!\n");
         goto cleanup;
     }
 
-    // Send ciphertext to server
     if (send(client_socket, ciphertext, kem->length_ciphertext, 0) != (int)kem->length_ciphertext) {
         printf("[ERROR] Failed to send ciphertext!\n");
         goto cleanup;
@@ -122,27 +127,28 @@ int main() {
 
     printf("[CLIENT] Key exchange complete! Encrypting message with AES-GCM using mbedTLS...\n");
 
-    //Simulate a network communication using a file 
+    // Read message from file
     char message[BUFFER_SIZE] = {0};
     FILE *fp = fopen("networkSim.txt", "r");
     if (!fp) {
-        perror("[ERROR] Failed to open input.txt");
+        perror("[ERROR] Failed to open networkSim.txt");
         exit(1);
     }
     fread(message, 1, BUFFER_SIZE - 1, fp);
     fclose(fp);
 
-    // Encrypt message with AES-GCM using shared_secret as key
+    uint8_t aes_key[32];
+    SHA256(shared_secret, kem->length_shared_secret, aes_key);
+
     uint8_t encrypted_msg[BUFFER_SIZE];
     uint8_t tag[AES_TAG_SIZE];
-    int encrypted_len = aes_gcm_encrypt(message, strlen((char*)message), shared_secret, iv, encrypted_msg, tag);
+    int encrypted_len = aes_gcm_encrypt((unsigned char *)message, strlen(message), aes_key, iv, encrypted_msg, tag);
 
     if (encrypted_len < 0) {
         printf("[CLIENT] AES-GCM encryption failed!\n");
         goto cleanup;
     }
 
-    // Send IV, encrypted message, and tag
     if (send_encrypted_message(client_socket, iv, encrypted_msg, encrypted_len, tag) < 0) {
         perror("[CLIENT] Failed to send encrypted message");
         goto cleanup;
@@ -150,8 +156,8 @@ int main() {
 
     printf("[CLIENT] AES-GCM Tag: ");
     for (int i = 0; i < AES_TAG_SIZE; i++) {
-        printf("%02X ", tag[i]);  // Print in hex format
-    }    
+        printf("%02X ", tag[i]);
+    }
 
     printf("\n[CLIENT] Encrypted message sent successfully!\n");
 

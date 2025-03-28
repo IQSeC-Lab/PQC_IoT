@@ -1,0 +1,11 @@
+gcc -o server_t/server_bikel1 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_bikel3 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_bikel5 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+
+gcc -o server_t/server_hqc128 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_hqc192 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_hqc256 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+
+gcc -o server_t/server_kyber512 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_kyber768 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
+gcc -o server_t/server_kyber1024 mbedtls_Server.c -loqs -lmbedtls -lmbedx509 -lmbedcrypto -L/usr/local/lib -lcrypto
