@@ -1,0 +1,37 @@
+Benchmark,Type,Watts,Category
+BIKE L1,Server,3.5,Low
+BIKE L1,Client,3.2,Low
+BIKE L3,Server,3.5,Low
+BIKE L3,Client,3.2,Low
+BIKE L5,Server,3.5,Low
+BIKE L5,Client,3.2,Low
+HQC128,Client,3.4,Low
+HQC128,Server,3.2,Low
+HQC192,Client,3.5,Low
+HQC192,Server,3.2,Low
+HQC256,Client,3.5,Low
+HQC256,Server,3.2,Low
+Kyber512,Client,3.4,Low
+Kyber512,Server,3.2,Low
+Kyber768,Client,3.5,Low
+Kyber768,Server,3.2,Low
+Kyber1024,Client,3.5,Low
+Kyber1024,Server,3.2,Low
+BIKE L1,Server,4.7,High
+BIKE L1,Client,3.5,High
+BIKE L3,Server,5.2,High
+BIKE L3,Client,3.5,High
+BIKE L5,Server,4.8,High
+BIKE L5,Client,3.5,High
+HQC128,Client,4.0,High
+HQC128,Server,3.6,High
+HQC192,Client,4.1,High
+HQC192,Server,3.6,High
+HQC256,Client,4.7,High
+HQC256,Server,3.7,High
+Kyber512,Client,3.9,High
+Kyber512,Server,3.5,High
+Kyber768,Client,3.9,High
+Kyber768,Server,3.5,High
+Kyber1024,Client,3.9,High
+Kyber1024,Server,3.5,High
