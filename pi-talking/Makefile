@@ -1,42 +1,25 @@
-# Compiler and flags
+# Makefile
+
 CC = gcc
-CFLAGS = -I/home/ubuntu/Desktop/liboqs/include \
-         -I/home/ubuntu/path/to/mbedtls/include
-LDFLAGS = -L/home/ubuntu/Desktop/liboqs/build \
-          -L/home/ubuntu/path/to/mbedtls/library \
-          -loqs -lmbedtls -lmbedx509 -lmbedcrypto -lm \
-          -Wl,-rpath,/home/ubuntu/Desktop/liboqs/build
+CFLAGS = -L/usr/local/lib
+CLIENT_LIBS = -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto
+SERVER_LIBS = -loqs -lmbedtls -lmbedx509 -lmbedcrypto
 
-# Source files for each executable
-SRCS_SERVER = mbedtls_Server.c
-SRCS_CLIENT = mbedtls_Client.c 
+CLIENT_SRC = mbedtls_Client.c
+CLIENT_OUT = client
 
-# Executable targets
-TARGETS = server client
+SERVER_SRC = mbedtls_Server.c
+SERVER_OUT = server
 
-# Object files for each executable
-OBJS_SERVER = $(SRCS_SERVER:.c=.o)
-OBJS_CLIENT = $(SRCS_CLIENT:.c=.o)
+.PHONY: all clean
 
-# Build all targets
-all: $(TARGETS) clean_objs  # Add a step to clean .o files after build
+all: $(CLIENT_OUT) $(SERVER_OUT)
 
-# Server executable
-server: $(OBJS_SERVER)
-	$(CC) $(OBJS_SERVER) -o server $(LDFLAGS)
+$(CLIENT_OUT): $(CLIENT_SRC)
+	$(CC) $(CLIENT_SRC) -o $(CLIENT_OUT) $(CLIENT_LIBS) $(CFLAGS)
 
-# Client executable
-client: $(OBJS_CLIENT)
-	$(CC) $(OBJS_CLIENT) -o client $(LDFLAGS)
+$(SERVER_OUT): $(SERVER_SRC)
+	$(CC) -o $(SERVER_OUT) $(SERVER_SRC) $(SERVER_LIBS) $(CFLAGS)
 
-# Compile each .c file to .o file
-%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS)
-
-# Remove .o files after build
-clean_objs:
-	rm -f $(OBJS_SERVER) $(OBJS_CLIENT)
-
-# Clean all build files
 clean:
-	rm -f $(OBJS_SERVER) $(OBJS_CLIENT) $(TARGETS)
+	rm -f $(CLIENT_OUT) $(SERVER_OUT)
