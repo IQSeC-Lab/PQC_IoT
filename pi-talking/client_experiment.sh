@@ -34,7 +34,7 @@ while [ $(($(date +%s) - START_TIME)) -lt $DURATION ]; do
     TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
     echo "$TIMESTAMP,$ELAPSED" >> "$LOG_FILE"
-    sleep 5
+    sleep 2
 done
 
 echo "Client finished at $(date)"
