@@ -1,0 +1,10 @@
+                 Algorithm Mean ± Std Dev
+   client_bikel1_benchmark  0.081 ± 0.005
+   client_bikel3_benchmark  0.164 ± 0.007
+   client_bikel5_benchmark  0.302 ± 0.013
+   client_hqc128_benchmark  0.081 ± 0.007
+   client_hqc192_benchmark  0.133 ± 0.008
+   client_hqc256_benchmark  0.203 ± 0.013
+client_kyber1024_benchmark  0.042 ± 0.005
+ client_kyber512_benchmark  0.041 ± 0.004
+ client_kyber768_benchmark  0.041 ± 0.004
