@@ -102,6 +102,11 @@ void pqc_key_exchange(int client_socket, uint8_t *aes_key) {
     OQS_KEM_free(kem);
 }
 
+/**
+ * 
+ * This is the main function for the server.
+ */
+
 int main() {
     srand(time(NULL));
     memset(clients, 0, sizeof(clients));
@@ -133,51 +138,54 @@ int main() {
         }
 
         select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        
+       // Check if there is a new connection
+if (FD_ISSET(server_socket, &read_fds)) {
+    int new_socket = accept(server_socket, NULL, NULL);
+    int i;
+    for (i = 0; i < MAX_CLIENTS; i++) {
+        if (clients[i].socket == 0) {
+            clients[i].socket = new_socket;
 
-        if (FD_ISSET(server_socket, &read_fds)) {
-            int new_socket = accept(server_socket, NULL, NULL);
-            int i;
-            for (i = 0; i < MAX_CLIENTS; i++) {
-                if (clients[i].socket == 0) {
-                    clients[i].socket = new_socket;
-        
-                    // 1. Key Exchange
-                    pqc_key_exchange(new_socket, clients[i].aes_key);
-        
-                    // 2. Receive Encrypted Name
-                    uint8_t iv[AES_IV_SIZE], tag[AES_TAG_SIZE];
-                    uint8_t encrypted_name[BUFFER_SIZE], decrypted_name[BUFFER_SIZE];
-                    size_t name_len;
-        
-                    if (recv_all(new_socket, iv, AES_IV_SIZE) != 0 ||
-                        recv_all(new_socket, tag, AES_TAG_SIZE) != 0) {
-                        printf("[SERVER] Failed to receive client name metadata\n");
-                        close(new_socket);
-                        clients[i].socket = 0;
-                        break;
-                    }
-        
-                    name_len = recv(new_socket, encrypted_name, BUFFER_SIZE, 0);
-                    if (name_len <= 0) {
-                        printf("[SERVER] Failed to receive encrypted client name\n");
-                        close(new_socket);
-                        clients[i].socket = 0;
-                        break;
-                    }
-        
-                    int decrypted_len = aes_gcm_decrypt(encrypted_name, name_len, clients[i].aes_key, iv, decrypted_name, tag);
-                    if (decrypted_len > 0) {
-                        decrypted_name[decrypted_len] = '\0';
-                        strncpy(clients[i].name, (char*)decrypted_name, MAX_NAME_LENGTH);
-                        printf("[SERVER] Client %d connected with name: %s\n", new_socket, clients[i].name);
-                    } else {
-                        strcpy(clients[i].name, "UNKNOWN");
-                        printf("[SERVER] Failed to decrypt client name. Marked as UNKNOWN\n");
-                    }
-        
-                    break;
-                }
+            // 1. Key Exchange
+            pqc_key_exchange(new_socket, clients[i].aes_key);
+
+            // 2. Receive Encrypted Name
+            uint8_t iv[AES_IV_SIZE], tag[AES_TAG_SIZE];
+            uint8_t encrypted_name[BUFFER_SIZE], decrypted_name[BUFFER_SIZE];
+            size_t name_len;
+
+            if (recv_all(new_socket, iv, AES_IV_SIZE) != 0 ||
+                recv_all(new_socket, tag, AES_TAG_SIZE) != 0) {
+                printf("[SERVER] Failed to receive client name metadata\n");
+                close(new_socket);
+                clients[i].socket = 0;
+                break;
             }
+
+            name_len = recv(new_socket, encrypted_name, BUFFER_SIZE, 0);
+            if (name_len <= 0) {
+                printf("[SERVER] Failed to receive encrypted client name\n");
+                close(new_socket);
+                clients[i].socket = 0;
+                break;
+            }
+
+            int decrypted_len = aes_gcm_decrypt(encrypted_name, name_len, clients[i].aes_key, iv, decrypted_name, tag);
+            if (decrypted_len > 0) {
+                decrypted_name[decrypted_len] = '\0';
+                strncpy(clients[i].name, (char*)decrypted_name, MAX_NAME_LEN);
+                printf("[SERVER] Client %d connected with name: %s\n", new_socket, clients[i].name);
+            } else {
+                strcpy(clients[i].name, "UNKNOWN");
+                printf("[SERVER] Failed to decrypt client name. Marked as UNKNOWN\n");
+            }
+
+            break;  // done handling new connection
+        }
+    }
+} 
+
         
 
         for (int i = 0; i < MAX_CLIENTS; i++) {
