@@ -1,0 +1,16 @@
+Hello, this message was read from a file and sent securely using BIKE-L1 and AES-GCM!
+
+username=alice
+password=SuperSecret123!
+
+
+A1B2C3D4E5F67890ZXY9876543210abcDEFghijKLMNOPqrstuVWxyz
+
+Ohhhh spooky
+
+Pigeon Story:
+
+The pigeon wore a tiny top hat as it strutted confidently across the cobblestone plaza, completely unfazed by the bewildered stares of passersby. Somewhere nearby, a street musician played a jaunty tune on an accordion, which the pigeon seemed to march in perfect rhythm to. A child pointed and laughed, swearing she saw the bird wink before it took off, top hat still firmly in place, gliding toward the horizon like some mysterious feathery gentleman on a secret mission.
+
+Moments later, the pigeon landed atop a nearby rooftop café, where a group of seagulls sat playing cards and sipping espresso from thimble-sized cups. “You’re late,” one squawked, tossing down a royal flush. The pigeon cooed coolly, adjusting his hat. “Traffic,” he replied. A hush fell over the table as he pulled a tiny envelope from under his wing and slid it across. Inside was a feather—bright blue and shimmering slightly. The gulls exchanged nervous glances. This wasn’t just a game anymore. This was war.
+
