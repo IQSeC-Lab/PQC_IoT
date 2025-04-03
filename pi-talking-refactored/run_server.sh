@@ -21,7 +21,7 @@ $SERVER_BIN &
 SERVER_PID=$!
 
 
-sleep 300
+sleep 1260
 
 # Kill the server
 kill $SERVER_PID

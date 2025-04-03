@@ -1,11 +1,10 @@
 #!/bin/bash
 
-APP=$1         # Binary path (e.g., ./client_t/client)
-KEM=$2         # Algorithm name (e.g., OQS_KEM_alg_kyber_1024)
-TEXTFILE=$3    # Path to input file (e.g., text_files/sample.txt)
-OUTFILE=$4     # Output CSV file
+APP=$1         # Binary path (e.g., ./client)
+TEXTFILE=$2    # Path to input file (e.g., text_files/sample.txt)
+OUTFILE=$3     # Output CSV file
 
-/usr/bin/time -v "$APP" "$KEM" "$TEXTFILE" > /dev/null 2> temp_bench.txt
+/usr/bin/time -v "$APP" "$TEXTFILE" > /dev/null 2> temp_bench.txt
 
 WALL_TIME=$(grep "Elapsed (wall clock)" temp_bench.txt | awk '{print $8}')
 MEMORY=$(grep "Maximum resident set size" temp_bench.txt | awk '{print $6}')

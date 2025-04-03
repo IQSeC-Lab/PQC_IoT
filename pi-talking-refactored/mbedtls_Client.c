@@ -1,6 +1,6 @@
-// Client that performs BIKE/CRYSTALS/HQC key exchange and encrypts a message with AES-GCM
+// Client that performs Kyber-1024 key exchange and encrypts a message with AES-GCM
 // Compile with:
-// gcc mbedtls_Client.c -o mbed_client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+// gcc mbedtls_Client.c -o client -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,13 +55,27 @@ int aes_gcm_encrypt(const unsigned char *plaintext, size_t len, const unsigned c
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s <PQC_ALGORITHM> <FILENAME>\n", argv[0]);
+    if (argc != 2) {
+        printf("Usage: %s <FILENAME>\n", argv[0]);
         exit(1);
     }
 
-    const char *kem_alg = argv[1];
-    const char *filename = argv[2];
+    const char *filename = argv[1];
+
+    // const char *kem_alg = OQS_KEM_alg_bike_l1;
+    // const char *kem_alg = OQS_KEM_alg_bike_l3;
+    // const char *kem_alg = OQS_KEM_alg_bike_l5;
+    // const char *kem_alg = OQS_KEM_alg_hqc_128;
+    // const char *kem_alg = OQS_KEM_alg_hqc_192;
+    // const char *kem_alg = OQS_KEM_alg_hqc_256;
+    // const char *kem_alg = OQS_KEM_alg_kyber_512;
+    // const char *kem_alg = OQS_KEM_alg_kyber_768;
+    const char *kem_alg = OQS_KEM_alg_kyber_1024;
+
+
+    
+
+    // const char *kem_alg = OQS_KEM_alg_kyber_1024;// Here change the algorithm
 
     int client_socket;
     struct sockaddr_in server_addr;
@@ -84,12 +98,9 @@ int main(int argc, char *argv[]) {
 
     printf("[CLIENT] Connected to server. Performing key exchange using %s...\n", kem_alg);
 
-    
     OQS_KEM *kem = OQS_KEM_new(kem_alg);
-
-
     if (!kem) {
-        printf("[ERROR] Failed to initialize KEM for algorithm %s\n",kem_alg);
+        printf("[ERROR] Failed to initialize KEM for algorithm %s\n", kem_alg);
         exit(1);
     }
 
@@ -120,14 +131,14 @@ int main(int argc, char *argv[]) {
     printf("[CLIENT] Key exchange complete. Shared secret established.\n");
 
     // Derive AES key from shared secret
-    uint8_t aes_key[32];
+    uint8_t aes_key[AES_KEY_SIZE];
     SHA256(shared_secret, kem->length_shared_secret, aes_key);
 
     // Read message from file
     char message[BUFFER_SIZE] = {0};
     FILE *fp = fopen(filename, "r");
     if (!fp) {
-        perror("[ERROR] Failed to open networkSim.txt");
+        perror("[ERROR] Failed to open input file");
         goto cleanup;
     }
     fread(message, 1, BUFFER_SIZE - 1, fp);
