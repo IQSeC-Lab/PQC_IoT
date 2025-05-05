@@ -36,7 +36,7 @@ sudo apt install astyle cmake gcc ninja-build libssl-dev python3-pytest python3-
 git clone --depth=1 https://github.com/open-quantum-safe/liboqs
 cd ~/Desktop/liboqs
 mkdir -p build && cd build
-cmake .. -G Ninja \ 
+cmake .. -G Ninja \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
@@ -105,7 +105,6 @@ int main() {
 
     printf("\nTesting KEM: %s\n", kem->method_name);
 
-    // ✅ FIX: Use struct members instead of function calls
     uint8_t public_key[kem->length_public_key];
     uint8_t secret_key[kem->length_secret_key];
     uint8_t ciphertext[kem->length_ciphertext];
@@ -148,10 +147,7 @@ int main() {
 To compile:
 
 ```
-gcc test_liboqs.c -o test_liboqs \
-    -I~/Desktop/liboqs/include \
-    -L~/Desktop/liboqs/build -loqs \
-    -Wl,-rpath,~/Desktop/liboqs/build
+gcc test_liboqs.c -o test_liboqs -loqs
 ```
 
 **Disclaimer**: please make sure to change to the correct folder.

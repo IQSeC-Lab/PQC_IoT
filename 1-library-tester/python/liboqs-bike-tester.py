@@ -1,5 +1,8 @@
 import oqs
 
+"""
+This script tests the OQS library with the BIKE-L1 algorithm.
+"""
 def test_oqs():
     algorithm = "BIKE-L1"  # You can change this to other PQC algorithms supported by OQS
 

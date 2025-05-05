@@ -1,15 +1,14 @@
 # Additional Tutorials
 
-These additional tutorials are for the terminal, navigation.
+These additional tutorials that we developed when working in a minimal set-up such as Raspberry Os lite, which it does not have any GUI, only terminal. For a better experience, we recommend the following tools:
 
 ## TMUX
 
 **Instalation**
+To install do:
 
 ```
-sudo apt install tmux     # Ubuntu/Debian
-sudo yum install tmux     # CentOS/RHEL
-brew install tmux         # macOS
+sudo apt install tmux
 ```
 
 **Basic Usage**
@@ -46,6 +45,7 @@ Ctrl + d
 
 ## SCREEN
 
+This is to copy and paste stuff in the terminal.
 **Install**
 
 ```
@@ -60,54 +60,27 @@ these are the instructions
 
 ## how to mount and unmount a drive
 
-first, run:
+Do:
 
 ```
-
-lsblk
-
-```
-
-then lookf for a line like:
-
-```
-
-/dev/sdb1 16G 4G 12G 25% /media/username/USB_NAME
-
-```
-
-then :
-
-```
-
 sudo mkdir -p /mnt/usb
-
 ```
 
 then:
 
 ```
-
 sudo mount /dev/sda1 /mnt/usb
-
 ```
 
-Now its time to copy:This is for all files
+Usually, the usb is mounted on `dev/sda1`. Then to copy from the usb to somewhere, do the following:
 
 ```
-
-cp -r /media/pi/MyUSB/\* ~/Documents/
-
+cp /mnt/usb/file ~/Documents/ -> This is for files
+cp -r /mnt/usb/docs/ ~/Documents/ -> folders
 ```
 
-to unmount:
+To unmount:
 
 ```
-
 sudo umount /mnt/usb
-
-```
-
-```
-
 ```
