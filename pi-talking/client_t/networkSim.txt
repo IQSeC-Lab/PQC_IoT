@@ -1,9 +1,0 @@
-Hello, this message was read from a file and sent securely using BIKE-L1 and AES-GCM!
-
-username=alice
-password=SuperSecret123!
-
-
-A1B2C3D4E5F67890ZXY9876543210abcDEFghijKLMNOPqrstuVWxyz
-
-Ohhhh spooky
