@@ -11,14 +11,15 @@ The containers share a common `/app` directory where all `.c` source files are l
 ---
 
 ## 📁 Folder Structure
+```
 .
 ├── base/ # Builds the pqc-base image (with libraries)
 │ └── Dockerfile
 ├── client/ # Minimal Dockerfile for the client
 ├── server/ # Minimal Dockerfile for the server
-├── pi-talking/ # Your C source files shared between both containers
+├── pi-talking/ # C source files shared between both containers
 ├── docker-compose.yml
-
+```
 
 ---
 
