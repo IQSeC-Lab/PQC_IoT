@@ -11,6 +11,7 @@ This research project evaluates the performance of post-quantum cryptographic al
 - `4-pi-talking`: Folder of the implementation with the two raspberry pi.
 - `5-Results`: Raw data and graphs acquired during testing.
 - `6-chatroom`: Additional implementation.
+- `7-Docker`: Docker version for learning purposes
 
 ## Installation
 
