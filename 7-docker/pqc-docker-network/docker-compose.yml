@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  pqc-server:
+    build: ./server
+    container_name: server
+    networks:
+      - pqc-net
+    ports:
+      - "8080:8080"
+
+  pqc-client:
+    build: ./client
+    container_name: client
+    depends_on:
+      - pqc-server
+    networks:
+      - pqc-net
+
+networks:
+  pqc-net:
+    driver: bridge
+
