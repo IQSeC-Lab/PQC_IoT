@@ -34,7 +34,9 @@ All measurement data is located at the `5-Results` folder. You will find:
 
 ## Additional
 
-We added an additional implementation of our code. We implemented a chatroom. **If interested**, please refer to the folder **6-chatroom**.
+We added an additional implementations of our code, **if interested** refer to:
+- `6-chatroom` -> chatroom using PQC and AES-GCM to communicate between two clients in a multithreaded server.
+- `7-Docker` -> Learning implementation with hands-on.
 
 ## Contributors
 
