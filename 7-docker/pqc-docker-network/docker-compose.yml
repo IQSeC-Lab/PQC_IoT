@@ -1,22 +1,30 @@
-version: '3.8'
+
 services:
   pqc-server:
-    build: ./server
-    container_name: server
-    networks:
-      - pqc-net
-    ports:
-      - "8080:8080"
-
-  pqc-client:
     build: ./client
     container_name: client
-    depends_on:
-      - pqc-server
+    hostname: client
     networks:
-      - pqc-net
+      pqc-net:
+        ipv4_address: 192.168.1.102
+    volumes:
+      - ./pi-talking:/app
+
+  pqc-client:
+    build: ./server
+    container_name: server
+    hostname: server
+    depends_on:
+      - pqc-client
+    networks:
+      pqc-net:
+        ipv4_address: 192.168.1.101
+    volumes:
+      - ./pi-talking:/app
 
 networks:
   pqc-net:
     driver: bridge
-
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24

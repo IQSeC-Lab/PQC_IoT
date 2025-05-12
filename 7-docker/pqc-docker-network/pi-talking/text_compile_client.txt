@@ -1,0 +1,12 @@
+gcc mbedtls_Client.c -o client_t/client_bikel1 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_bikel3 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_bikel5 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+
+
+gcc mbedtls_Client.c -o client_t/client_hqc128 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_hqc192 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_hqc256 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+
+gcc mbedtls_Client.c -o client_t/client_kyber512 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_kyber768 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
+gcc mbedtls_Client.c -o client_t/client_kyber1024 -lmbedtls -lmbedx509 -lmbedcrypto -loqs -lssl -lcrypto -L/usr/local/lib
