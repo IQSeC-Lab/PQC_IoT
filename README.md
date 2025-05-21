@@ -41,4 +41,4 @@ We added an additional implementations of our code, **if interested** refer to:
 ## Contributors
 
 - **Jesus R. Lopez** (NotSamus) jlopez126@miners.utep.edu
-- **Viviana Cadena** (Vixxi)
+- **Viviana Cadena** (Vixxi) - not email
