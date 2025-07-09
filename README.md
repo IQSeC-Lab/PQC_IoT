@@ -2,6 +2,11 @@
 
 This research project evaluates the performance of post-quantum cryptographic algorithms on resource-constrained hardware. Our experiments were conducted on two Raspberry Pi units to benchmark key operations.
 
+
+**This Paper is accepted to IEEE International Conference on Quantum Computing and Engineering (QCE25)**
+
+
+
 ## Project Structure
 
 - `1-Guides`: Provides guides on how to install all the dependencies needed.
@@ -38,7 +43,13 @@ We added an additional implementations of our code, **if interested** refer to:
 - `6-chatroom` -> chatroom using PQC and AES-GCM to communicate between two clients in a multithreaded server.
 - `7-Docker` -> Learning implementation with hands-on.
 
-## Contributors
+## Acknowledgments
 
+Jesus Lopez is funded by the Department of Computer Science at UTEP. Viviana Cadena is funded by the Cyber Halo Innovation Research Program (CHIRP) at Pacific Northwest National Laboratory (PNNL).
+
+
+## Contributors
+Any questions about the project or if you want to contribute, please reach out!!
 - **Jesus R. Lopez** (NotSamus) jlopez126@miners.utep.edu
-- **Viviana Cadena** (Vixxi) - not email
+- **Viviana Cadena** (Vixxi) - vcadena1@miners.utep.edu
+
