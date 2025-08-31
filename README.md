@@ -53,3 +53,16 @@ Any questions about the project or if you want to contribute, please reach out!!
 - **Jesus R. Lopez** (NotSamus) jlopez126@miners.utep.edu
 - **Viviana Cadena** (Vixxi) - vcadena1@miners.utep.edu
 
+
+## Citation 
+```
+@misc{lopez2025evaluatingpostquantumcryptographicalgorithms,
+      title={Evaluating Post-Quantum Cryptographic Algorithms on Resource-Constrained Devices}, 
+      author={Jesus Lopez and Viviana Cadena and Mohammad Saidur Rahman},
+      year={2025},
+      eprint={2507.08312},
+      archivePrefix={arXiv},
+      primaryClass={cs.CR},
+      url={https://arxiv.org/abs/2507.08312}, 
+}
+```
